@@ -1,0 +1,30 @@
+{
+  "name": "natur-service",
+  "version": "1.0.0",
+  "description": "natur action的调用层设计，用于聚合多个action成为一定的业务流，适用于复杂的业务场景，高级场景分离，可以更好的维护单个action，以及业务拓展",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "rimraf dist && tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://empty916@github.com/empty916/natur-service.git"
+  },
+  "keywords": [
+    "natur",
+    "react",
+    "service"
+  ],
+  "author": "empty916",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/empty916/natur-service/issues"
+  },
+  "homepage": "https://github.com/empty916/natur-service#readme",
+  "devDependencies": {
+    "natur": "^1.1.8",
+    "rimraf": "^3.0.2",
+    "typescript": "^3.8.3"
+  }
+}
