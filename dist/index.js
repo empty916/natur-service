@@ -4,11 +4,16 @@ var NaturService = /** @class */ (function () {
     }
     NaturService.prototype.getModule = function (moduleName, onUpdate) {
         var store = NaturService.store;
-        if (!store.hasModule(moduleName)) {
+        this.sub(moduleName, onUpdate);
+        if (!store.getAllModuleName().includes(moduleName)) {
             throw new Error(moduleName + " is invalid!");
         }
-        this.sub(moduleName, onUpdate);
-        this[moduleName] = NaturService.store.getModule(moduleName);
+        if (!store.hasModule(moduleName)) {
+            this[moduleName] = undefined;
+        }
+        else {
+            this[moduleName] = store.getModule(moduleName);
+        }
     };
     NaturService.prototype.sub = function (moduleName, onUpdate) {
         var _this = this;
