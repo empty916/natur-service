@@ -5,9 +5,6 @@ var NaturService = /** @class */ (function () {
     NaturService.prototype.getModule = function (moduleName, onUpdate) {
         var store = NaturService.store;
         this.sub(moduleName, onUpdate);
-        if (!store.getAllModuleName().includes(moduleName)) {
-            throw new Error(moduleName + " is invalid!");
-        }
         if (!store.hasModule(moduleName)) {
             this[moduleName] = undefined;
         }
@@ -17,10 +14,10 @@ var NaturService = /** @class */ (function () {
     };
     NaturService.prototype.sub = function (moduleName, onUpdate) {
         var _this = this;
-        this.listener.push(NaturService.store.subscribe(moduleName, function () {
+        this.listener.push(NaturService.store.subscribe(moduleName, function (me) {
             _this[moduleName] = NaturService.store.getModule(moduleName);
             if (onUpdate) {
-                onUpdate();
+                onUpdate(me);
             }
         }));
     };

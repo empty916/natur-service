@@ -14,7 +14,7 @@ NaturService.store = store; // 配置store
 class UserService extends NaturService {
 	constructor() {
 		super();
-		this.getModule('user', () => {
+		this.getModule('user', (moduleEvent: {type: 'init' | 'update' | 'remove', actionName: string}) => {
             // 当用户模块更新时的回调函数
             // this.user...
         }); // 绑定用户模块

@@ -1,4 +1,4 @@
-import { Store } from 'natur';
+import { Store, Listener } from 'natur';
 
 class NaturService {
 	static store: Store;
@@ -7,12 +7,9 @@ class NaturService {
 
 	listener: Array<Function> = [];
 
-	getModule(moduleName: string, onUpdate?: Function) {
+	getModule(moduleName: string, onUpdate?: Listener) {
 		const {store} = NaturService;
 		this.sub(moduleName, onUpdate);
-		if (!store.getAllModuleName().includes(moduleName)) {
-			throw new Error(`${moduleName} is invalid!`);
-		}
 		if (!store.hasModule(moduleName)) {
 			this[moduleName] = undefined;
 		} else {
@@ -20,11 +17,11 @@ class NaturService {
 		}
 	}
 
-	sub(moduleName: string, onUpdate?: Function) {
-		this.listener.push(NaturService.store.subscribe(moduleName, () => {
+	sub(moduleName: string, onUpdate?: Listener) {
+		this.listener.push(NaturService.store.subscribe(moduleName, (me) => {
 			this[moduleName] = NaturService.store.getModule(moduleName);
 			if (onUpdate) {
-				onUpdate();
+				onUpdate(me);
 			}
 		}));
 	}
