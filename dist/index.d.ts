@@ -7,10 +7,10 @@ declare type ServiceListener = (me: ServiceListenerParams) => any;
 declare class NaturService {
     static store: Store;
     [mn: string]: any;
-    private listener;
-    getModule(moduleName: string, onUpdate?: ServiceListener): void;
+    protected listener: Array<Function>;
+    protected getModule(moduleName: string, onUpdate?: ServiceListener): void;
     private _getModule;
-    private sub;
+    protected sub(moduleName: string, onUpdate?: ServiceListener): void;
     destroy(): void;
 }
 export default NaturService;

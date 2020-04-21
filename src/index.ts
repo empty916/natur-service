@@ -15,9 +15,9 @@ class NaturService {
 
 	[mn:string]: any;
 
-	private listener: Array<Function> = [];
+	protected listener: Array<Function> = [];
 
-	getModule(moduleName: string, onUpdate?: ServiceListener) {
+	protected getModule(moduleName: string, onUpdate?: ServiceListener) {
 		this.sub(moduleName, onUpdate);
 		this._getModule(moduleName);
 	}
@@ -31,7 +31,7 @@ class NaturService {
 		}
 	}
 
-	private sub(moduleName: string, onUpdate?: ServiceListener) {
+	protected sub(moduleName: string, onUpdate?: ServiceListener) {
 		this.listener.push(NaturService.store.subscribe(moduleName, (me) => {
 			const oldModule = this[moduleName];
 			this._getModule(moduleName);
