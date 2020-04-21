@@ -1,15 +1,29 @@
-import { Store, Listener } from 'natur';
+import { Store, Listener, InjectStoreModule, ModuleEvent } from 'natur';
+
+
+// type ModuleEvent = ;
+
+type ServiceListenerParams = ModuleEvent & {
+	oldModule: InjectStoreModule,
+	newModule: InjectStoreModule,
+}
+
+type ServiceListener = (me: ServiceListenerParams ) => any;
 
 class NaturService {
 	static store: Store;
 
 	[mn:string]: any;
 
-	listener: Array<Function> = [];
+	private listener: Array<Function> = [];
 
-	getModule(moduleName: string, onUpdate?: Listener) {
-		const {store} = NaturService;
+	getModule(moduleName: string, onUpdate?: ServiceListener) {
 		this.sub(moduleName, onUpdate);
+		this._getModule(moduleName);
+	}
+	private _getModule(moduleName: string) {
+		const {store} = NaturService;
+
 		if (!store.hasModule(moduleName)) {
 			this[moduleName] = undefined;
 		} else {
@@ -17,11 +31,17 @@ class NaturService {
 		}
 	}
 
-	sub(moduleName: string, onUpdate?: Listener) {
+	private sub(moduleName: string, onUpdate?: ServiceListener) {
 		this.listener.push(NaturService.store.subscribe(moduleName, (me) => {
-			this[moduleName] = NaturService.store.getModule(moduleName);
+			const oldModule = this[moduleName];
+			this._getModule(moduleName);
+			const newModule = this[moduleName];
 			if (onUpdate) {
-				onUpdate(me);
+				onUpdate({
+					...me,
+					oldModule,
+					newModule
+				});
 			}
 		}));
 	}

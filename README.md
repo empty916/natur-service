@@ -14,7 +14,12 @@ NaturService.store = store; // 配置store
 class UserService extends NaturService {
 	constructor() {
 		super();
-		this.getModule('user', (moduleEvent: {type: 'init' | 'update' | 'remove', actionName: string}) => {
+		this.getModule('user', (moduleEvent: {
+			type: 'init' | 'update' | 'remove', 
+			actionName: string,
+			oldModule: InjectStoreModule,
+			newModule: InjectStoreModule,
+		}) => {
             // 当用户模块更新时的回调函数
             // this.user...
         }); // 绑定用户模块
@@ -38,7 +43,11 @@ class UserService extends NaturService {
 }
 
 
-export default new UserService();
+const userService = new UserService();
+
+// 销毁
+userService.destroy(); 
+userService = null;
 
 
 ````
