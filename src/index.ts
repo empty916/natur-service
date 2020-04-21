@@ -1,4 +1,4 @@
-import { Store, Listener, InjectStoreModule, ModuleEvent } from 'natur';
+import { Store, InjectStoreModule, ModuleEvent, State } from 'natur';
 
 
 // type ModuleEvent = ;
@@ -6,6 +6,7 @@ import { Store, Listener, InjectStoreModule, ModuleEvent } from 'natur';
 type ServiceListenerParams = ModuleEvent & {
 	oldModule: InjectStoreModule,
 	newModule: InjectStoreModule,
+	state: State
 }
 
 type ServiceListener = (me: ServiceListenerParams ) => any;
@@ -40,7 +41,8 @@ class NaturService {
 				onUpdate({
 					...me,
 					oldModule,
-					newModule
+					newModule,
+					state: newModule.state,
 				});
 			}
 		}));

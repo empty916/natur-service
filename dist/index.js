@@ -34,7 +34,7 @@ var NaturService = /** @class */ (function () {
             var newModule = _this[moduleName];
             if (onUpdate) {
                 onUpdate(__assign(__assign({}, me), { oldModule: oldModule,
-                    newModule: newModule }));
+                    newModule: newModule, state: newModule.state }));
             }
         }));
     };

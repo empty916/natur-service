@@ -8,6 +8,7 @@ natur action的调用层设计，用于聚合多个action成为一定的业务�
 // 你的natur store实例
 import store from 'your-natur-store-instance';
 import NaturService from 'natur-service';
+import { InjectStoreModule, State } from 'natur';
 
 NaturService.store = store; // 配置store
 
@@ -19,6 +20,7 @@ class UserService extends NaturService {
 			actionName: string,
 			oldModule: InjectStoreModule,
 			newModule: InjectStoreModule,
+			state: State
 		}) => {
             // 当用户模块更新时的回调函数
             // this.user...

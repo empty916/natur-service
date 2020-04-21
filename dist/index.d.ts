@@ -1,7 +1,8 @@
-import { Store, InjectStoreModule, ModuleEvent } from 'natur';
+import { Store, InjectStoreModule, ModuleEvent, State } from 'natur';
 declare type ServiceListenerParams = ModuleEvent & {
     oldModule: InjectStoreModule;
     newModule: InjectStoreModule;
+    state: State;
 };
 declare type ServiceListener = (me: ServiceListenerParams) => any;
 declare class NaturService {
