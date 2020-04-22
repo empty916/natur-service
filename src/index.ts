@@ -4,8 +4,8 @@ import { Store, InjectStoreModule, ModuleEvent, State } from 'natur';
 // type ModuleEvent = ;
 
 type ServiceListenerParams = ModuleEvent & {
-	oldModule: InjectStoreModule,
-	newModule: InjectStoreModule,
+	oldModule: InjectStoreModule | undefined,
+	newModule: InjectStoreModule | undefined,
 	state: State
 }
 
@@ -15,37 +15,63 @@ class NaturService {
 	static store: Store;
 
 	[mn:string]: any;
-
+	protected store: Store;
+	private moduleHasLoadPromise: {[mn: string]: Promise<any>} = {};
 	protected listener: Array<Function> = [];
-
-	protected getModule(moduleName: string, onUpdate?: ServiceListener) {
-		this.sub(moduleName, onUpdate);
-		this._getModule(moduleName);
+	constructor() {
+		if (!NaturService.store) {
+			throw new Error('NaturService: store is not valid. you should bind store first!');
+		}
+		this.store = NaturService.store;
+	}
+	protected getModule(moduleName: string) {
+		this[moduleName] = this._getModule(moduleName);
 	}
 	private _getModule(moduleName: string) {
-		const {store} = NaturService;
-
+		const {store} = this;
 		if (!store.hasModule(moduleName)) {
-			this[moduleName] = undefined;
+			return undefined;
 		} else {
-			this[moduleName] = store.getModule(moduleName);
+			return store.getModule(moduleName);
 		}
 	}
-
-	protected sub(moduleName: string, onUpdate?: ServiceListener) {
-		this.listener.push(NaturService.store.subscribe(moduleName, (me) => {
-			const oldModule = this[moduleName];
-			this._getModule(moduleName);
-			const newModule = this[moduleName];
-			if (onUpdate) {
-				onUpdate({
-					...me,
-					oldModule,
-					newModule,
-					state: newModule.state,
+	async dispatch(type: string, ...arg: any[]) {
+		const moduleName = type.split('/')[0];
+		const { store } = this;
+		if (store.hasModule(moduleName)) {
+			return store.dispatch(type, ...arg);
+		} else {
+			if (!this.moduleHasLoadPromise[moduleName]) {
+				this.moduleHasLoadPromise[moduleName] = new Promise((resolve) => {
+					const unsub = store.subscribe(moduleName, ({type}) => {
+						if (type === 'init') {
+							unsub();
+							resolve();
+						}
+					});
 				});
 			}
-		}));
+			return this.moduleHasLoadPromise[moduleName].then(() => store.dispatch(type, ...arg));
+		}
+	}
+	protected watch(moduleName: string, watcher: ServiceListener) {
+		const {store, _getModule} = this;
+		let oldModule = _getModule(moduleName);
+		const unwatch = store.subscribe(moduleName, (me) => {
+			const newModule = _getModule(moduleName);
+			watcher({
+				...me,
+				state: newModule?.state,
+				oldModule,
+				newModule,
+			});
+			oldModule = newModule;
+		});
+		const destroyWatch = () => {
+			oldModule = undefined;
+			unwatch();
+		};
+		this.listener.push(destroyWatch);
 	}
 
 	destroy() {
