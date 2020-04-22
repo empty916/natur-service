@@ -23,6 +23,11 @@ class NaturService {
 			throw new Error('NaturService: store is not valid. you should bind store first!');
 		}
 		this.store = NaturService.store;
+		this.getModule = this.getModule.bind(this);
+		this._getModule = this._getModule.bind(this);
+		this.dispatch = this.dispatch.bind(this);
+		this.watch = this.watch.bind(this);
+		this.destroy = this.destroy.bind(this);
 	}
 	protected getModule(moduleName: string) {
 		this[moduleName] = this._getModule(moduleName);
@@ -73,7 +78,6 @@ class NaturService {
 		};
 		this.listener.push(destroyWatch);
 	}
-
 	destroy() {
 		this.listener.forEach(unSub => unSub());
 	}
