@@ -9,7 +9,7 @@ declare class NaturService {
     static store: Store;
     [mn: string]: any;
     protected store: Store;
-    private moduleHasLoadPromise;
+    private dispatchPromise;
     protected listener: Array<Function>;
     constructor();
     protected getModule(moduleName: string): void;

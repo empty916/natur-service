@@ -1,8 +1,5 @@
 import { Store, InjectStoreModule, ModuleEvent, State } from 'natur';
 
-
-// type ModuleEvent = ;
-
 type ServiceListenerParams = ModuleEvent & {
 	oldModule: InjectStoreModule | undefined,
 	newModule: InjectStoreModule | undefined,
@@ -16,7 +13,10 @@ class NaturService {
 
 	[mn:string]: any;
 	protected store: Store;
-	private moduleHasLoadPromise: {[mn: string]: Promise<any>} = {};
+	private dispatchPromise: {[type: string]: {
+		value: Promise<any> | undefined,
+		cancel: Function,
+	}} = {};
 	protected listener: Array<Function> = [];
 	constructor() {
 		if (!NaturService.store) {
@@ -47,17 +47,31 @@ class NaturService {
 		if (store.hasModule(moduleName)) {
 			return store.dispatch(type, ...arg);
 		} else {
-			if (!this.moduleHasLoadPromise[moduleName]) {
-				this.moduleHasLoadPromise[moduleName] = new Promise((resolve) => {
-					const unsub = store.subscribe(moduleName, ({type}) => {
-						if (type === 'init') {
-							unsub();
-							resolve();
-						}
-					});
-				});
+			if (!this.dispatchPromise[type]) {
+				this.dispatchPromise[type] = {
+					value: undefined,
+					cancel: () => {},
+				};
 			}
-			return this.moduleHasLoadPromise[moduleName].then(() => store.dispatch(type, ...arg));
+			if (!!this.dispatchPromise[type].value) {
+				this.dispatchPromise[type].cancel();
+			}
+			this.dispatchPromise[type].value = new Promise((resolve, reject) => {
+				const unsub = store.subscribe(moduleName, ({type}) => {
+					unsub();
+					if(type !== 'remove') {
+						resolve();
+					} else {
+						reject();
+					}
+				});
+				this.dispatchPromise[type].cancel = () => {
+					reject();
+					unsub();
+				};
+			})
+			.then(() => store.dispatch(type, ...arg), () => {});
+			return this.dispatchPromise[type].value;
 		}
 	}
 	protected watch(moduleName: string, watcher: ServiceListener) {
@@ -83,6 +97,5 @@ class NaturService {
 		this.listener.forEach(unSub => unSub());
 	}
 }
-
 
 export default NaturService;

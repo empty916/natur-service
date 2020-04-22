@@ -54,7 +54,7 @@ var __spreadArrays = (this && this.__spreadArrays) || function () {
 };
 var NaturService = /** @class */ (function () {
     function NaturService() {
-        this.moduleHasLoadPromise = {};
+        this.dispatchPromise = {};
         this.listener = [];
         if (!NaturService.store) {
             throw new Error('NaturService: store is not valid. you should bind store first!');
@@ -87,6 +87,7 @@ var NaturService = /** @class */ (function () {
         }
         return __awaiter(this, void 0, void 0, function () {
             var moduleName, store;
+            var _this = this;
             return __generator(this, function (_a) {
                 moduleName = type.split('/')[0];
                 store = this.store;
@@ -94,18 +95,33 @@ var NaturService = /** @class */ (function () {
                     return [2 /*return*/, store.dispatch.apply(store, __spreadArrays([type], arg))];
                 }
                 else {
-                    if (!this.moduleHasLoadPromise[moduleName]) {
-                        this.moduleHasLoadPromise[moduleName] = new Promise(function (resolve) {
-                            var unsub = store.subscribe(moduleName, function (_a) {
-                                var type = _a.type;
-                                if (type === 'init') {
-                                    unsub();
-                                    resolve();
-                                }
-                            });
-                        });
+                    if (!this.dispatchPromise[type]) {
+                        this.dispatchPromise[type] = {
+                            value: undefined,
+                            cancel: function () { }
+                        };
                     }
-                    return [2 /*return*/, this.moduleHasLoadPromise[moduleName].then(function () { return store.dispatch.apply(store, __spreadArrays([type], arg)); })];
+                    if (!!this.dispatchPromise[type].value) {
+                        this.dispatchPromise[type].cancel();
+                    }
+                    this.dispatchPromise[type].value = new Promise(function (resolve, reject) {
+                        var unsub = store.subscribe(moduleName, function (_a) {
+                            var type = _a.type;
+                            unsub();
+                            if (type !== 'remove') {
+                                resolve();
+                            }
+                            else {
+                                reject();
+                            }
+                        });
+                        _this.dispatchPromise[type].cancel = function () {
+                            reject();
+                            unsub();
+                        };
+                    })
+                        .then(function () { return store.dispatch.apply(store, __spreadArrays([type], arg)); }, function () { });
+                    return [2 /*return*/, this.dispatchPromise[type].value];
                 }
                 return [2 /*return*/];
             });
