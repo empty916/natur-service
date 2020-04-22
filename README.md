@@ -29,6 +29,16 @@ class UserService extends NaturService {
         if (state) {
           // 这里的dispatch不同于natur的dispatch，它可以推送还未加载的懒加载模块，或者未配置的手动加载模块
           this.dispatch("app/syncUserData", state);
+          
+          /**
+           * 当重复执行推送，但是模块依然未加载，那么natur-service会将上一次的推送停止，并抛出以下错误
+           * 以此来保证同样的类型的推送只保留最新的一次推送，防止堆栈溢出
+           * {
+           *  code: 0,
+           *  message: 'stop the last dispath!'
+           * }
+           */
+          this.dispatch("app/syncUserData", state);
         }
       }
     );

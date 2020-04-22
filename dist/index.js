@@ -52,6 +52,8 @@ var __spreadArrays = (this && this.__spreadArrays) || function () {
             r[k] = a[j];
     return r;
 };
+// 停止上一次推送码
+var STOP_THE_LAST_DISPATCH_CODE = 0;
 var NaturService = /** @class */ (function () {
     function NaturService() {
         this.dispatchPromise = {};
@@ -105,22 +107,19 @@ var NaturService = /** @class */ (function () {
                         this.dispatchPromise[type].cancel();
                     }
                     this.dispatchPromise[type].value = new Promise(function (resolve, reject) {
-                        var unsub = store.subscribe(moduleName, function (_a) {
-                            var type = _a.type;
+                        var unsub = store.subscribe(moduleName, function () {
                             unsub();
-                            if (type !== 'remove') {
-                                resolve();
-                            }
-                            else {
-                                reject();
-                            }
+                            resolve();
                         });
                         _this.dispatchPromise[type].cancel = function () {
-                            reject();
+                            reject({
+                                code: STOP_THE_LAST_DISPATCH_CODE,
+                                message: 'stop the last dispath!'
+                            });
                             unsub();
                         };
                     })
-                        .then(function () { return store.dispatch.apply(store, __spreadArrays([type], arg)); }, function () { });
+                        .then(function () { return store.dispatch.apply(store, __spreadArrays([type], arg)); });
                     return [2 /*return*/, this.dispatchPromise[type].value];
                 }
                 return [2 /*return*/];

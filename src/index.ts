@@ -8,6 +8,9 @@ type ServiceListenerParams = ModuleEvent & {
 
 type ServiceListener = (me: ServiceListenerParams ) => any;
 
+// 停止上一次推送码
+const STOP_THE_LAST_DISPATCH_CODE = 0;
+
 class NaturService {
 	static store: Store;
 
@@ -57,20 +60,20 @@ class NaturService {
 				this.dispatchPromise[type].cancel();
 			}
 			this.dispatchPromise[type].value = new Promise((resolve, reject) => {
-				const unsub = store.subscribe(moduleName, ({type}) => {
+				const unsub = store.subscribe(moduleName, () => {
 					unsub();
-					if(type !== 'remove') {
-						resolve();
-					} else {
-						reject();
-					}
+					resolve();
 				});
 				this.dispatchPromise[type].cancel = () => {
-					reject();
+					reject({
+						code: STOP_THE_LAST_DISPATCH_CODE,
+						message: 'stop the last dispath!'
+					});
 					unsub();
 				};
 			})
-			.then(() => store.dispatch(type, ...arg), () => {});
+			.then(() => store.dispatch(type, ...arg));
+
 			return this.dispatchPromise[type].value;
 		}
 	}
