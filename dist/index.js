@@ -67,7 +67,9 @@ var NaturService = /** @class */ (function () {
         this.destroy = this.destroy.bind(this);
     }
     NaturService.prototype.getModule = function (moduleName) {
+        var _this = this;
         this[moduleName] = this._getModule(moduleName);
+        this.watch(moduleName, function () { return _this[moduleName] = _this._getModule(moduleName); });
     };
     NaturService.prototype._getModule = function (moduleName) {
         var store = this.store;

@@ -31,6 +31,7 @@ class NaturService {
 	}
 	protected getModule(moduleName: string) {
 		this[moduleName] = this._getModule(moduleName);
+		this.watch(moduleName, () => this[moduleName] = this._getModule(moduleName));
 	}
 	private _getModule(moduleName: string) {
 		const {store} = this;
