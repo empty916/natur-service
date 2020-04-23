@@ -32,19 +32,20 @@ class UserService extends NaturService {
           
           /**
            * 当重复执行推送，但是模块依然未加载，那么natur-service会将上一次的推送停止，并抛出以下错误
-           * 以此来保证同样的类型的推送只保留最新的一次推送，防止堆栈溢出
            * {
            *  code: 0,
            *  message: 'stop the last dispath!'
            * }
+           * 以此来保证同样的类型的推送只保留最新的一次推送，防止堆栈溢出, 
+           * 如果你不喜欢抛出错误的处理，那么你可以重写此方法
            */
           this.dispatch("app/syncUserData", state);
         }
       }
     );
 
-    this.getModule("user"); // 绑定user模块
-    this.getModule("app"); // 绑定app模块
+    this.bindModule("user"); // 绑定user模块
+    this.bindModule("app"); // 绑定app模块
     this.app; // 获取app模块
   }
 

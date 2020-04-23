@@ -62,13 +62,13 @@ var NaturService = /** @class */ (function () {
             throw new Error('NaturService: store is not valid. you should bind store first!');
         }
         this.store = NaturService.store;
-        this.getModule = this.getModule.bind(this);
+        this.bindModule = this.bindModule.bind(this);
         this._getModule = this._getModule.bind(this);
         this.dispatch = this.dispatch.bind(this);
         this.watch = this.watch.bind(this);
         this.destroy = this.destroy.bind(this);
     }
-    NaturService.prototype.getModule = function (moduleName) {
+    NaturService.prototype.bindModule = function (moduleName) {
         var _this = this;
         this[moduleName] = this._getModule(moduleName);
         this.watch(moduleName, function () { return _this[moduleName] = _this._getModule(moduleName); });
