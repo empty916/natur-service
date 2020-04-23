@@ -46,22 +46,10 @@ class UserService extends NaturService {
 
     this.bindModule("user"); // 绑定user模块
     this.bindModule("app"); // 绑定app模块
-    this.app; // 获取app模块
+    this.app; // 获取app模块， this.app会一直保持最新的模块引用，如果app还未加载，那么this.app会是undefined
+    this.user; // 获取user模块
   }
-
-  fetchUserInfo() {
-    return this.user.actions.fetchData().then(({ menu }) => {
-      return this.app.actions.updateMenu(menu);
-    });
-  }
-
-  getName() {
-    return this.user.state.name;
-  }
-
-  removeName() {
-    return this.user.actions.removeName();
-  }
+  // 其他业务逻辑
 }
 
 const userService = new UserService();
