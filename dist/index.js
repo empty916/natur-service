@@ -68,10 +68,11 @@ var NaturService = /** @class */ (function () {
         this.watch = this.watch.bind(this);
         this.destroy = this.destroy.bind(this);
     }
-    NaturService.prototype.bindModule = function (moduleName) {
+    NaturService.prototype.bindModule = function (moduleName, myName) {
         var _this = this;
-        this[moduleName] = this._getModule(moduleName);
-        this.watch(moduleName, function () { return _this[moduleName] = _this._getModule(moduleName); });
+        if (myName === void 0) { myName = moduleName; }
+        this[myName] = this._getModule(moduleName);
+        this.watch(moduleName, function () { return _this[myName] = _this._getModule(moduleName); });
     };
     NaturService.prototype._getModule = function (moduleName) {
         var store = this.store;

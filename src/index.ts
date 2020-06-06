@@ -32,9 +32,9 @@ class NaturService {
 		this.watch = this.watch.bind(this);
 		this.destroy = this.destroy.bind(this);
 	}
-	protected bindModule(moduleName: string) {
-		this[moduleName] = this._getModule(moduleName);
-		this.watch(moduleName, () => this[moduleName] = this._getModule(moduleName));
+	protected bindModule(moduleName: string, myName: string = moduleName ) {
+		this[myName] = this._getModule(moduleName);
+		this.watch(moduleName, () => this[myName] = this._getModule(moduleName));
 	}
 	private _getModule(moduleName: string) {
 		const {store} = this;
@@ -100,5 +100,6 @@ class NaturService {
 		this.listener.forEach(unSub => unSub());
 	}
 }
+
 
 export default NaturService;

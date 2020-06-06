@@ -12,7 +12,7 @@ declare class NaturService {
     private dispatchPromise;
     protected listener: Array<Function>;
     constructor();
-    protected bindModule(moduleName: string): void;
+    protected bindModule(moduleName: string, myName?: string): void;
     private _getModule;
     protected dispatch(type: string, ...arg: any[]): Promise<any>;
     protected watch(moduleName: string, watcher: ServiceListener): void;
