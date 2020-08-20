@@ -10,12 +10,11 @@ import store from "your-natur-store-instance";
 import NaturService from "natur-service";
 import { InjectStoreModule, State } from "natur";
 
-NaturService.store = store; // 配置store
+NaturService.storeGetter = () => store; // 配置store
 
-class UserService extends NaturService {
+class UserService extends NaturService<typeof store.type> {
   constructor() {
     super();
-    this.store === store; // true
 
     // 观察用户模块
     this.watch("user", (moduleEvent: {
@@ -28,7 +27,7 @@ class UserService extends NaturService {
         // 当用户模块发生变化时的回调函数
         if (state) {
           // 这里的dispatch不同于natur的dispatch，它可以推送还未加载的懒加载模块，或者未配置的手动加载模块
-          this.dispatch("app/syncUserData", state);
+          this.dispatch("app", "syncUserData", state);
           
           /**
            * 当重复执行推送，但是模块依然未加载，那么natur-service会将上一次的推送停止，并抛出以下错误
@@ -39,15 +38,10 @@ class UserService extends NaturService {
            * 以此来保证同样的类型的推送只保留最新的一次推送，防止堆栈溢出, 
            * 如果你不喜欢抛出错误的处理，那么你可以重写此方法
            */
-          this.dispatch("app/syncUserData", state);
+          this.dispatch("app", "syncUserData", state);
         }
       }
     );
-
-    this.bindModule("user"); // 绑定user模块
-    this.bindModule("app", '$app'); // 绑定app模块, 并使用自定义名字
-    this.$app; // 获取app模块， this.$app会一直保持最新的模块引用，如果app还未加载，那么this.app会是undefined
-    this.user; // 获取user模块
   }
   // 其他业务逻辑
 }

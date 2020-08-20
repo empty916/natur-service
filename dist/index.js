@@ -58,44 +58,25 @@ var NaturService = /** @class */ (function () {
     function NaturService() {
         this.dispatchPromise = {};
         this.listener = [];
-        if (!NaturService.store) {
-            throw new Error('NaturService: store is not valid. you should bind store first!');
-        }
-        this.store = NaturService.store;
-        this.bindModule = this.bindModule.bind(this);
         this._getModule = this._getModule.bind(this);
         this.dispatch = this.dispatch.bind(this);
         this.watch = this.watch.bind(this);
+        this.getStore = this.getStore.bind(this);
         this.destroy = this.destroy.bind(this);
     }
-    NaturService.prototype.bindModule = function (moduleName, myName) {
-        var _this = this;
-        if (myName === void 0) { myName = moduleName; }
-        this[myName] = this._getModule(moduleName);
-        this.watch(moduleName, function () { return _this[myName] = _this._getModule(moduleName); });
-    };
-    NaturService.prototype._getModule = function (moduleName) {
-        var store = this.store;
-        if (!store.hasModule(moduleName)) {
-            return undefined;
-        }
-        else {
-            return store.getModule(moduleName);
-        }
-    };
-    NaturService.prototype.dispatch = function (type) {
+    NaturService.prototype.dispatch = function (moduleName, actionName) {
         var arg = [];
-        for (var _i = 1; _i < arguments.length; _i++) {
-            arg[_i - 1] = arguments[_i];
+        for (var _i = 2; _i < arguments.length; _i++) {
+            arg[_i - 2] = arguments[_i];
         }
         return __awaiter(this, void 0, void 0, function () {
-            var moduleName, store;
+            var store, type;
             var _this = this;
             return __generator(this, function (_a) {
-                moduleName = type.split('/')[0];
-                store = this.store;
+                store = this.getStore();
+                type = moduleName + "/" + actionName;
                 if (store.hasModule(moduleName)) {
-                    return [2 /*return*/, store.dispatch.apply(store, __spreadArrays([type], arg))];
+                    return [2 /*return*/, store.dispatch.apply(store, __spreadArrays([moduleName, actionName], arg))];
                 }
                 else {
                     if (!this.dispatchPromise[type]) {
@@ -120,15 +101,30 @@ var NaturService = /** @class */ (function () {
                             unsub();
                         };
                     })
-                        .then(function () { return store.dispatch.apply(store, __spreadArrays([type], arg)); });
+                        .then(function () { return store.dispatch.apply(store, __spreadArrays([moduleName, actionName], arg)); });
                     return [2 /*return*/, this.dispatchPromise[type].value];
                 }
                 return [2 /*return*/];
             });
         });
     };
+    NaturService.prototype._getModule = function (moduleName) {
+        var store = this.getStore();
+        if (!store.hasModule(moduleName)) {
+            return undefined;
+        }
+        return store.getModule(moduleName);
+    };
+    NaturService.prototype.getStore = function () {
+        var store = NaturService.storeGetter();
+        if (!store) {
+            throw new Error('NaturService: store is invalid!');
+        }
+        return store;
+    };
     NaturService.prototype.watch = function (moduleName, watcher) {
-        var _a = this, store = _a.store, _getModule = _a._getModule;
+        var store = this.getStore();
+        var _getModule = this._getModule;
         var oldModule = _getModule(moduleName);
         var unwatch = store.subscribe(moduleName, function (me) {
             var newModule = _getModule(moduleName);

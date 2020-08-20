@@ -1,54 +1,46 @@
-import { Store, InjectStoreModule, ModuleEvent, State } from 'natur';
+import { Store, InjectStoreModules, ModuleEvent } from 'natur';
 
-type ServiceListenerParams = ModuleEvent & {
-	oldModule: InjectStoreModule | undefined,
-	newModule: InjectStoreModule | undefined,
-	state: State
-}
-
-type ServiceListener = (me: ServiceListenerParams ) => any;
 
 // 停止上一次推送码
 const STOP_THE_LAST_DISPATCH_CODE = 0;
 
-class NaturService {
-	static store: Store;
+type ModuleEventType = ModuleEvent['type'];
 
-	[mn:string]: any;
-	protected store: Store;
-	private dispatchPromise: {[type: string]: {
+type ServiceListenerParamsTypeMap<StoreType extends InjectStoreModules, M extends keyof StoreType> = {
+	[t in ModuleEventType]: {
+		type: t;
+		actionName: t extends 'update' ? keyof StoreType[M]['actions'] : undefined;
+		oldModule: t extends 'init' ? undefined : StoreType[M];
+		newModule: t extends 'remove' ? undefined : StoreType[M];
+		state: t extends 'remove' ? undefined : StoreType[M]['state'];
+	}
+}
+
+export default class NaturService<ST extends InjectStoreModules> {
+
+	static storeGetter: () => Store<any, any>;
+
+	dispatchPromise: {[type: string]: {
 		value: Promise<any> | undefined,
 		cancel: Function,
 	}} = {};
-	protected listener: Array<Function> = [];
+
+	listener: Array<Function> = [];
 	constructor() {
-		if (!NaturService.store) {
-			throw new Error('NaturService: store is not valid. you should bind store first!');
-		}
-		this.store = NaturService.store;
-		this.bindModule = this.bindModule.bind(this);
 		this._getModule = this._getModule.bind(this);
-		this.dispatch = this.dispatch.bind(this);
+		this.dispatch = (this.dispatch as any).bind(this);
 		this.watch = this.watch.bind(this);
+		this.getStore = this.getStore.bind(this);
 		this.destroy = this.destroy.bind(this);
 	}
-	protected bindModule(moduleName: string, myName: string = moduleName ) {
-		this[myName] = this._getModule(moduleName);
-		this.watch(moduleName, () => this[myName] = this._getModule(moduleName));
-	}
-	private _getModule(moduleName: string) {
-		const {store} = this;
-		if (!store.hasModule(moduleName)) {
-			return undefined;
-		} else {
-			return store.getModule(moduleName);
-		}
-	}
-	protected async dispatch(type: string, ...arg: any[]) {
-		const moduleName = type.split('/')[0];
-		const { store } = this;
-		if (store.hasModule(moduleName)) {
-			return store.dispatch(type, ...arg);
+	protected async dispatch<
+		MN extends keyof ST,
+		AN extends keyof ST[MN]['actions'],
+	>(moduleName: MN, actionName: AN, ...arg: Parameters<ST[MN]['actions'][AN]>): Promise<ReturnType<ST[MN]['actions'][AN]>> {
+		const store = this.getStore();
+		const type = `${moduleName}/${actionName}`;
+		if (store.hasModule(moduleName as string)) {
+			return store.dispatch(moduleName, actionName, ...arg);
 		} else {
 			if (!this.dispatchPromise[type]) {
 				this.dispatchPromise[type] = {
@@ -60,7 +52,7 @@ class NaturService {
 				this.dispatchPromise[type].cancel();
 			}
 			this.dispatchPromise[type].value = new Promise((resolve, reject) => {
-				const unsub = store.subscribe(moduleName, () => {
+				const unsub = store.subscribe(moduleName as keyof ST, () => {
 					unsub();
 					resolve();
 				});
@@ -72,22 +64,41 @@ class NaturService {
 					unsub();
 				};
 			})
-			.then(() => store.dispatch(type, ...arg));
+			.then(() => store.dispatch(moduleName, actionName, ...arg));
 
 			return this.dispatchPromise[type].value;
 		}
 	}
-	protected watch(moduleName: string, watcher: ServiceListener) {
-		const {store, _getModule} = this;
+
+	private _getModule<M extends keyof ST>(moduleName: M) {
+		const store = this.getStore();
+		if (!store.hasModule(moduleName as string)) {
+			return undefined;
+		}
+		return store.getModule(moduleName as string);
+	}
+
+	protected getStore() {
+		const store = NaturService.storeGetter() as Store<ST, any>;
+		if (!store) {
+			throw new Error('NaturService: store is invalid!');
+		}
+		return store;
+	}
+	protected watch<
+		MN extends keyof ST,
+	>(moduleName: MN, watcher: <T extends ModuleEventType>(me: ServiceListenerParamsTypeMap<ST, MN>[T]) => any) {
+		const store = this.getStore();
+		const {_getModule} = this;
 		let oldModule = _getModule(moduleName);
-		const unwatch = store.subscribe(moduleName, (me) => {
+		const unwatch = store.subscribe(moduleName as any, (me) => {
 			const newModule = _getModule(moduleName);
 			watcher({
 				...me,
 				state: newModule?.state,
 				oldModule,
 				newModule,
-			});
+			} as any);
 			oldModule = newModule;
 		});
 		const destroyWatch = () => {
@@ -100,6 +111,3 @@ class NaturService {
 		this.listener.forEach(unSub => unSub());
 	}
 }
-
-
-export default NaturService;
