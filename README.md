@@ -15,7 +15,8 @@ NaturService.storeGetter = () => store; // 配置store
 class UserService extends NaturService<typeof store.type> {
   constructor() {
     super();
-
+    // 获取store实例
+    this.getStore();
     // 观察用户模块
     this.watch("user", (moduleEvent: {
         type: "init" | "update" | "remove"; // user模块变更类型，详情请看natur文档
