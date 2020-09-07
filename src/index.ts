@@ -85,9 +85,15 @@ export default class NaturService<ST extends InjectStoreModules> {
 		}
 		return store;
 	}
-	protected watch<
+	protected async watch<
 		MN extends keyof ST,
 	>(moduleName: MN, watcher: <T extends ModuleEventType>(me: ServiceListenerParamsTypeMap<ST, MN>[T]) => any) {
+		/**
+		 * 在store的模块中，又可能引入service模块，
+		 * 在service模块构造函数中，一般会调用watch方法，但是store有可能为初始化完成，
+		 * 所以将watch放在promise队列中
+		 */
+		await Promise.resolve();
 		const store = this.getStore();
 		const {_getModule} = this;
 		let oldModule = _getModule(moduleName);

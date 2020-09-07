@@ -123,20 +123,42 @@ var NaturService = /** @class */ (function () {
         return store;
     };
     NaturService.prototype.watch = function (moduleName, watcher) {
-        var store = this.getStore();
-        var _getModule = this._getModule;
-        var oldModule = _getModule(moduleName);
-        var unwatch = store.subscribe(moduleName, function (me) {
-            var newModule = _getModule(moduleName);
-            watcher(__assign(__assign({}, me), { state: newModule === null || newModule === void 0 ? void 0 : newModule.state, oldModule: oldModule,
-                newModule: newModule }));
-            oldModule = newModule;
+        return __awaiter(this, void 0, void 0, function () {
+            var store, _getModule, oldModule, unwatch, destroyWatch;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: 
+                    /**
+                     * 在store的模块中，又可能引入service模块，
+                     * 在service模块构造函数中，一般会调用watch方法，但是store有可能为初始化完成，
+                     * 所以将watch放在promise队列中
+                     */
+                    return [4 /*yield*/, Promise.resolve()];
+                    case 1:
+                        /**
+                         * 在store的模块中，又可能引入service模块，
+                         * 在service模块构造函数中，一般会调用watch方法，但是store有可能为初始化完成，
+                         * 所以将watch放在promise队列中
+                         */
+                        _a.sent();
+                        store = this.getStore();
+                        _getModule = this._getModule;
+                        oldModule = _getModule(moduleName);
+                        unwatch = store.subscribe(moduleName, function (me) {
+                            var newModule = _getModule(moduleName);
+                            watcher(__assign(__assign({}, me), { state: newModule === null || newModule === void 0 ? void 0 : newModule.state, oldModule: oldModule,
+                                newModule: newModule }));
+                            oldModule = newModule;
+                        });
+                        destroyWatch = function () {
+                            oldModule = undefined;
+                            unwatch();
+                        };
+                        this.listener.push(destroyWatch);
+                        return [2 /*return*/];
+                }
+            });
         });
-        var destroyWatch = function () {
-            oldModule = undefined;
-            unwatch();
-        };
-        this.listener.push(destroyWatch);
     };
     NaturService.prototype.destroy = function () {
         this.listener.forEach(function (unSub) { return unSub(); });
