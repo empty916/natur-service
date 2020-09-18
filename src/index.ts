@@ -1,4 +1,5 @@
-import { Store, InjectStoreModules, ModuleEvent } from 'natur';
+import { InjectStoreModules, ModuleEvent } from 'natur';
+import { _Store } from 'natur/dist/ts-utils';
 
 
 // 停止上一次推送码
@@ -16,9 +17,10 @@ type ServiceListenerParamsTypeMap<StoreType extends InjectStoreModules, M extend
 	}
 }
 
+
 export default class NaturService<ST extends InjectStoreModules> {
 
-	static storeGetter: () => Store<any, any>;
+	static storeGetter: () => _Store<any, any>;
 
 	dispatchPromise: {[type: string]: {
 		value: Promise<any> | undefined,
@@ -79,7 +81,7 @@ export default class NaturService<ST extends InjectStoreModules> {
 	}
 
 	protected getStore() {
-		const store = NaturService.storeGetter() as Store<ST, any>;
+		const store = NaturService.storeGetter() as _Store<ST, any>;
 		if (!store) {
 			throw new Error('NaturService: store is invalid!');
 		}

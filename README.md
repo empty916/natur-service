@@ -55,3 +55,9 @@ userService = null;
 
 
 ````
+
+
+### NOTE
+
+- 你不应该在store的模块中使用service，因为service的初始化依赖store的初始化，会导致循环引用问题
+- You should not use service in the store module, because the initialization of the service depends on the initialization of the store, which will cause circular references.
