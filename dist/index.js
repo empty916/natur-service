@@ -74,6 +74,9 @@ var NaturService = /** @class */ (function () {
             var _this = this;
             return __generator(this, function (_a) {
                 store = this.getStore();
+                if (store === undefined) {
+                    throw new Error('natur-service: store is undefined!');
+                }
                 type = moduleName + "/" + actionName;
                 if (store.hasModule(moduleName)) {
                     return [2 /*return*/, store.dispatch.apply(store, __spreadArrays([moduleName, actionName], arg))];
@@ -110,17 +113,16 @@ var NaturService = /** @class */ (function () {
     };
     NaturService.prototype._getModule = function (moduleName) {
         var store = this.getStore();
+        if (store === undefined) {
+            throw new Error('natur-service: store is undefined!');
+        }
         if (!store.hasModule(moduleName)) {
             return undefined;
         }
         return store.getModule(moduleName);
     };
     NaturService.prototype.getStore = function () {
-        var store = NaturService.storeGetter();
-        if (!store) {
-            throw new Error('NaturService: store is invalid!');
-        }
-        return store;
+        return undefined;
     };
     NaturService.prototype.watch = function (moduleName, watcher) {
         return __awaiter(this, void 0, void 0, function () {
@@ -142,6 +144,9 @@ var NaturService = /** @class */ (function () {
                          */
                         _a.sent();
                         store = this.getStore();
+                        if (store === undefined) {
+                            throw new Error('natur-service: store is undefined!');
+                        }
                         _getModule = this._getModule;
                         oldModule = _getModule(moduleName);
                         unwatch = store.subscribe(moduleName, function (me) {

@@ -11,7 +11,6 @@ declare type ServiceListenerParamsTypeMap<StoreType extends InjectStoreModules, 
     };
 };
 export default class NaturService<ST extends InjectStoreModules> {
-    static storeGetter: () => _Store<any, any>;
     dispatchPromise: {
         [type: string]: {
             value: Promise<any> | undefined;
@@ -22,7 +21,7 @@ export default class NaturService<ST extends InjectStoreModules> {
     constructor();
     protected dispatch<MN extends keyof ST, AN extends keyof ST[MN]['actions']>(moduleName: MN, actionName: AN, ...arg: Parameters<ST[MN]['actions'][AN]>): Promise<ReturnType<ST[MN]['actions'][AN]>>;
     private _getModule;
-    protected getStore(): _Store<ST, any, Partial<{ [k in keyof ST]: Partial<ST[k]["state"]>; }>>;
+    protected getStore(): undefined | _Store<ST, any>;
     protected watch<MN extends keyof ST>(moduleName: MN, watcher: <T extends ModuleEventType>(me: ServiceListenerParamsTypeMap<ST, MN>[T]) => any): Promise<void>;
     destroy(): void;
 }
