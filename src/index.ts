@@ -1,7 +1,6 @@
 import { InjectStoreModules, ModuleEvent } from 'natur';
 import { _Store } from 'natur/dist/ts-utils';
 
-
 // 停止上一次推送码
 const STOP_THE_LAST_DISPATCH_CODE = 0;
 
@@ -20,8 +19,6 @@ type ServiceListenerParamsTypeMap<StoreType extends InjectStoreModules, M extend
 
 export default class NaturService<ST extends InjectStoreModules> {
 
-	static storeGetter: () => _Store<any, any>;
-
 	dispatchPromise: {[type: string]: {
 		value: Promise<any> | undefined,
 		cancel: Function,
@@ -34,12 +31,15 @@ export default class NaturService<ST extends InjectStoreModules> {
 		this.watch = this.watch.bind(this);
 		this.getStore = this.getStore.bind(this);
 		this.destroy = this.destroy.bind(this);
-	}
+    }
 	protected async dispatch<
 		MN extends keyof ST,
 		AN extends keyof ST[MN]['actions'],
 	>(moduleName: MN, actionName: AN, ...arg: Parameters<ST[MN]['actions'][AN]>): Promise<ReturnType<ST[MN]['actions'][AN]>> {
-		const store = this.getStore();
+        const store = this.getStore();
+        if (store === undefined) {
+            throw new Error('natur-service: store is undefined!');
+        }
 		const type = `${moduleName}/${actionName}`;
 		if (store.hasModule(moduleName as string)) {
 			return store.dispatch(moduleName, actionName, ...arg);
@@ -73,19 +73,18 @@ export default class NaturService<ST extends InjectStoreModules> {
 	}
 
 	private _getModule<M extends keyof ST>(moduleName: M) {
-		const store = this.getStore();
+        const store = this.getStore();
+        if (store === undefined) {
+            throw new Error('natur-service: store is undefined!');
+        }
 		if (!store.hasModule(moduleName as string)) {
 			return undefined;
 		}
 		return store.getModule(moduleName as string);
 	}
 
-	protected getStore() {
-		const store = NaturService.storeGetter() as _Store<ST, any>;
-		if (!store) {
-			throw new Error('NaturService: store is invalid!');
-		}
-		return store;
+	protected getStore(): undefined | _Store<ST, any> {
+		return undefined;
 	}
 	protected async watch<
 		MN extends keyof ST,
@@ -96,7 +95,10 @@ export default class NaturService<ST extends InjectStoreModules> {
 		 * 所以将watch放在promise队列中
 		 */
 		await Promise.resolve();
-		const store = this.getStore();
+        const store = this.getStore();
+        if (store === undefined) {
+            throw new Error('natur-service: store is undefined!');
+        }
 		const {_getModule} = this;
 		let oldModule = _getModule(moduleName);
 		const unwatch = store.subscribe(moduleName as any, (me) => {

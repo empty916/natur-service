@@ -10,9 +10,12 @@ import store from "your-natur-store-instance";
 import NaturService from "natur-service";
 import { InjectStoreModule, State } from "natur";
 
-NaturService.storeGetter = () => store; // 配置store
-
 class UserService extends NaturService<typeof store.type> {
+  // you must override the getStore function
+  // 你必须重写getStore方法，返回你的store实例
+  getStore() {
+    return store;
+  }
   constructor() {
     super();
     // 获取store实例
