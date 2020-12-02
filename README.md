@@ -10,16 +10,32 @@ import store from "your-natur-store-instance";
 import NaturService from "natur-service";
 import { InjectStoreModule, State } from "natur";
 
-class UserService extends NaturService<typeof store.type> {
-  // you must override the getStore function
-  // 你必须重写getStore方法，返回你的store实例
-  getStore() {
-    return store;
+// sync modules of your store, 你的同步模块的类型
+type M = typeof modules;
+// lazy modules of your store， 你的异步模块的类型
+type LM = typeof lazyModules;
+
+class BaseService extends NaturService<M, LM> {
+  /**
+   * for server side render， bind your store instance to every service instance
+   * also you can make it optional.
+   * 
+   * 为了更好的服务端渲染，绑定了你store到每个实例上
+   * 如果你不需要服务端渲染，那么你可以传入默认的store给到构造函数
+   */
+  constructor(s: typeof store = store) {
+    super(s);
   }
-  constructor() {
-    super();
-    // 获取store实例
+}
+
+
+class UserService extends BaseService {
+  constructor(s: typeof store) {
+    super(s);
+    // get store instanse, 获取store实例
+    this.store;
     this.getStore();
+
     // 观察用户模块
     this.watch("user", (moduleEvent: {
         type: "init" | "update" | "remove"; // user模块变更类型，详情请看natur文档
@@ -50,7 +66,7 @@ class UserService extends NaturService<typeof store.type> {
   // 其他业务逻辑
 }
 
-const userService = new UserService();
+const userService = new UserService(store);
 
 // 销毁
 userService.destroy();

@@ -24,8 +24,8 @@
   },
   "homepage": "https://github.com/empty916/natur-service#readme",
   "devDependencies": {
-    "natur": "^2.0.0",
+    "natur": "^2.1.0-beta6",
     "rimraf": "^3.0.2",
-    "typescript": "^3.8.3"
+    "typescript": "^3.9.7"
   }
 }

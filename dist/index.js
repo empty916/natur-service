@@ -55,13 +55,14 @@ var __spreadArrays = (this && this.__spreadArrays) || function () {
 // 停止上一次推送码
 var STOP_THE_LAST_DISPATCH_CODE = 0;
 var NaturService = /** @class */ (function () {
-    function NaturService() {
+    function NaturService(s) {
         this.dispatchPromise = {};
         this.listener = [];
+        this.store = s;
+        this.getStore = this.getStore.bind(this);
         this._getModule = this._getModule.bind(this);
         this.dispatch = this.dispatch.bind(this);
         this.watch = this.watch.bind(this);
-        this.getStore = this.getStore.bind(this);
         this.destroy = this.destroy.bind(this);
     }
     NaturService.prototype.dispatch = function (moduleName, actionName) {
@@ -99,7 +100,7 @@ var NaturService = /** @class */ (function () {
                         _this.dispatchPromise[type].cancel = function () {
                             reject({
                                 code: STOP_THE_LAST_DISPATCH_CODE,
-                                message: 'stop the last dispath!'
+                                message: 'stop the last dispatch!'
                             });
                             unsub();
                         };
@@ -122,7 +123,7 @@ var NaturService = /** @class */ (function () {
         return store.getModule(moduleName);
     };
     NaturService.prototype.getStore = function () {
-        return undefined;
+        return this.store;
     };
     NaturService.prototype.watch = function (moduleName, watcher) {
         return __awaiter(this, void 0, void 0, function () {
@@ -150,8 +151,9 @@ var NaturService = /** @class */ (function () {
                         _getModule = this._getModule;
                         oldModule = _getModule(moduleName);
                         unwatch = store.subscribe(moduleName, function (me) {
+                            var _a;
                             var newModule = _getModule(moduleName);
-                            watcher(__assign(__assign({}, me), { state: newModule === null || newModule === void 0 ? void 0 : newModule.state, oldModule: oldModule,
+                            watcher(__assign(__assign({}, me), { state: (_a = newModule) === null || _a === void 0 ? void 0 : _a.state, oldModule: oldModule,
                                 newModule: newModule }));
                             oldModule = newModule;
                         });
