@@ -25,13 +25,14 @@ class BaseService extends NaturService<M, LM> {
    */
   constructor(s: typeof store = store) {
     super(s);
+    this.start();
   }
+  start() {}
 }
 
 
 class UserService extends BaseService {
-  constructor(s: typeof store) {
-    super(s);
+  start() {
     // get store instanse, 获取store实例
     this.store;
     this.getStore();
