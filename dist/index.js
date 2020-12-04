@@ -174,7 +174,9 @@ var NaturService = /** @class */ (function () {
             _this.dispatchPromise[key].value = undefined;
             delete _this.dispatchPromise[key];
         });
+        this.store = null;
         this.listener.forEach(function (unSub) { return unSub(); });
+        this.listener = [];
     };
     return NaturService;
 }());

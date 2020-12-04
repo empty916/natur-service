@@ -137,6 +137,8 @@ export default class NaturService<
 			this.dispatchPromise[key].value = undefined;
 			delete this.dispatchPromise[key];
 		});
+		this.store = null as any;
 		this.listener.forEach(unSub => unSub());
+		this.listener = [];
 	}
 }
