@@ -168,6 +168,12 @@ var NaturService = /** @class */ (function () {
         });
     };
     NaturService.prototype.destroy = function () {
+        var _this = this;
+        Object.keys(this.dispatchPromise).forEach(function (key) {
+            _this.dispatchPromise[key].cancel();
+            _this.dispatchPromise[key].value = undefined;
+            delete _this.dispatchPromise[key];
+        });
         this.listener.forEach(function (unSub) { return unSub(); });
     };
     return NaturService;

@@ -132,6 +132,11 @@ export default class NaturService<
 		this.listener.push(destroyWatch);
 	}
 	destroy() {
+		Object.keys(this.dispatchPromise).forEach(key => {
+			this.dispatchPromise[key].cancel();
+			this.dispatchPromise[key].value = undefined;
+			delete this.dispatchPromise[key];
+		});
 		this.listener.forEach(unSub => unSub());
 	}
 }
