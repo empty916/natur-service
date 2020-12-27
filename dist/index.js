@@ -1,3 +1,4 @@
+"use strict";
 var __assign = (this && this.__assign) || function () {
     __assign = Object.assign || function(t) {
         for (var s, i = 1, n = arguments.length; i < n; i++) {
@@ -52,6 +53,7 @@ var __spreadArrays = (this && this.__spreadArrays) || function () {
             r[k] = a[j];
     return r;
 };
+exports.__esModule = true;
 // 停止上一次推送码
 var STOP_THE_LAST_DISPATCH_CODE = 0;
 var NaturService = /** @class */ (function () {
@@ -180,4 +182,4 @@ var NaturService = /** @class */ (function () {
     };
     return NaturService;
 }());
-export default NaturService;
+exports["default"] = NaturService;
