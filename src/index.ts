@@ -9,7 +9,7 @@ type ModuleEventType = ModuleEvent['type'];
 type ServiceListenerParamsTypeMap<StoreType extends InjectStoreModules, M extends keyof StoreType> = {
 	[t in ModuleEventType]: {
 		type: t;
-		actionName: t extends 'update' ? keyof StoreType[M]['actions'] : undefined;
+		actionName: t extends 'update' ? (keyof StoreType[M]['actions'] | 'globalSetStates' | 'globalResetStates') : undefined;
 		oldModule: t extends 'init' ? undefined : StoreType[M];
 		newModule: t extends 'remove' ? undefined : StoreType[M];
 		state: t extends 'remove' ? undefined : StoreType[M]['state'];
