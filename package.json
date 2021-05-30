@@ -5,11 +5,10 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "rimraf dist && tsc",
-    "prepublish": "yarn build",
-    "pub": "yarn publish",
     "test": "jest",
-    "test:report": "jest --coverage"
+    "build": "rimraf dist && tsc",
+    "prepublish": "npm run test && npm run build",
+    "pub": "yarn publish"
   },
   "repository": {
     "type": "git",
@@ -33,6 +32,7 @@
     "@types/jest": "^26.0.23",
     "jest": "^27.0.3",
     "natur": "^2.1.x",
+    "react": "^17.0.2",
     "rimraf": "^3.0.2",
     "ts-jest": "^27.0.1",
     "typescript": "^3.9.7"
