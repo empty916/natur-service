@@ -30,7 +30,6 @@
   ],
   "homepage": "https://github.com/empty916/natur-service#readme",
   "devDependencies": {
-    "@babel/core": "^7.14.3",
     "@types/jest": "^26.0.23",
     "jest": "^27.0.3",
     "natur": "^2.1.x",
