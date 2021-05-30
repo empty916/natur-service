@@ -67,7 +67,7 @@ export default class NaturService<
 			if (!!this.dispatchPromise[type].value) {
 				this.dispatchPromise[type].cancel();
 			}
-			this.dispatchPromise[type].value = new Promise((resolve, reject) => {
+			this.dispatchPromise[type].value = new Promise<void>((resolve, reject) => {
 				const unsub = store.subscribe(moduleName, () => {
 					unsub();
 					resolve();

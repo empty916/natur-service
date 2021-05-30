@@ -7,7 +7,9 @@
   "scripts": {
     "build": "rimraf dist && tsc",
     "prepublish": "yarn build",
-    "pub": "yarn publish"
+    "pub": "yarn publish",
+    "test": "jest",
+    "test:report": "jest --coverage"
   },
   "repository": {
     "type": "git",
@@ -23,10 +25,17 @@
   "bugs": {
     "url": "https://github.com/empty916/natur-service/issues"
   },
+  "files": [
+    "dist"
+  ],
   "homepage": "https://github.com/empty916/natur-service#readme",
   "devDependencies": {
-    "natur": "^2.1.0-beta6",
+    "@babel/core": "^7.14.3",
+    "@types/jest": "^26.0.23",
+    "jest": "^27.0.3",
+    "natur": "^2.1.x",
     "rimraf": "^3.0.2",
+    "ts-jest": "^27.0.1",
     "typescript": "^3.9.7"
   }
 }
