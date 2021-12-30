@@ -134,7 +134,7 @@ export default class NaturService<
 		this.listener.push(destroyWatch);
 	}
 	/**
-	 * sync sourceModule's data to targetModule when sourceModule data has changed and newData is not euqal to targetModule's data
+	 * when the data of sourceModule changes and the data of sourceModule is different from the data of targetModule, synchronize the data of sourceModule to targetModule
 	 * @param sourceModuleName
 	 * @param targetModuleName
 	 * @param stateKey common key of sourceModule's state and targetModule's state
@@ -151,7 +151,7 @@ export default class NaturService<
 		});
 	}
 	/**
-	* sync sourceModule's data to targetModule when sourceModule's data is not equal to targetModule's data
+	* synchronize the data of sourceModule to targetModule, when the data of sourceModule is different from the data of targetModule
 	* @param sourceModuleName
 	* @param targetModuleName
 	* @param stateKey common key of sourceModule's state and targetModule's state
