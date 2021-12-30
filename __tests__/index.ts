@@ -235,13 +235,18 @@ test('sync data', async () => {
     const cs = new CountService();
     await sleep(10);
     store.dispatch('count3', 'update' ,11);
+    store.dispatch('count', 'update' ,11);
     cs.syncDataByKeyPath('count3', 'count4', 'state.value', 'data.a');
     cs.syncDataByKeyPath('count3', 'count4', 'state.value', 'data.b.d');
     cs.syncDataByKeyPath('count3', 'count4', 'maps.plus1', 'value');
+
+    cs.syncDataByKeyPath('count', 'count2', 'state');
     await sleep(10);
     expect(store.getModule('count4').state.data.a).toBe(11);
     expect(store.getModule('count4').state.data.b.d).toBe(11);
     expect(store.getModule('count4').state.value).toBe(12);
+
+    expect(store.getModule('count2').state).toBe(11);
 })
 
 
@@ -250,14 +255,17 @@ test('watch sync data', async () => {
         start() {
             this.watchAndSyncDataByKeyPath('count3', 'count4', 'state.value', 'data.a');
             this.watchAndSyncDataByKeyPath('count3', 'count4', 'maps.plus1', 'value');
+            this.watchAndSyncDataByKeyPath('count', 'count2', 'state');
         }
     }
     const cs = new CountService();
     await sleep(10);
     store.dispatch('count3', 'update' ,11);
+    store.dispatch('count', 'update' ,11);
     await sleep(10);
     expect(store.getModule('count4').state.data.a).toBe(11);
     expect(store.getModule('count4').state.value).toBe(12);
+    expect(store.getModule('count2').state).toBe(11);
 })
 
 test('destroy', async () => {
