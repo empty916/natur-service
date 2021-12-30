@@ -131,6 +131,24 @@ export default class NaturService<
 		};
 		this.listener.push(destroyWatch);
 	}
+	syncDataByStateKey<
+		MN extends keyof GenerateStoreType<M, LM>,
+		MN2 extends keyof GenerateStoreType<M, LM>,
+		DK extends Extract<keyof GenerateStoreType<M, LM>[MN]['state'], keyof GenerateStoreType<M, LM>[MN2]['state']>,
+	>(mn: MN, mn2: MN2, dataKey: DK) {
+		this.watch(mn, ({ state, oldModule }) => {
+			if (state) {
+				if ((oldModule?.state as typeof state)?.[dataKey] !== state[dataKey]) {
+					this.store.globalSetStates({
+						[mn2]: {
+						...this.store.getModule(mn2).state,
+						[dataKey]: state[dataKey],
+						},
+					});
+				}
+			}
+		});
+	}
 	destroy() {
 		Object.keys(this.dispatchPromise).forEach(key => {
 			this.dispatchPromise[key].cancel();
