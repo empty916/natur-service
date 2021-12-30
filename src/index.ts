@@ -26,12 +26,14 @@ export default class NaturService<
 	LM extends LazyStoreModules,
 	S extends Store<M, LM> = Store<M, LM>,
 	ST extends InjectStoreModules = GenerateStoreType<M, LM>,
-> {
+	> {
 
-	dispatchPromise: {[type: string]: {
-		value: Promise<any> | undefined,
-		cancel: Function,
-	}} = {};
+	dispatchPromise: {
+		[type: string]: {
+			value: Promise<any> | undefined,
+			cancel: Function,
+		}
+	} = {};
 	store: S;
 	listener: Array<Function> = [];
 	constructor(s: S) {
@@ -41,19 +43,19 @@ export default class NaturService<
 		this.dispatch = (this.dispatch as any).bind(this);
 		this.watch = this.watch.bind(this);
 		this.destroy = this.destroy.bind(this);
-    }
+	}
 	protected async dispatch<
 		MN extends Extract<keyof ST, string>,
 		AN extends Extract<keyof ST[MN]['actions'], string>,
-	>(
-		moduleName: MN,
-		actionName: AN,
-		...arg: Parameters<ST[MN]['actions'][AN]>
-	): Promise<ReturnType<ST[MN]['actions'][AN]>> {
-        const store = this.getStore();
-        if (store === undefined) {
-            throw new Error('natur-service: store is undefined!');
-        }
+		>(
+			moduleName: MN,
+			actionName: AN,
+			...arg: Parameters<ST[MN]['actions'][AN]>
+		): Promise<ReturnType<ST[MN]['actions'][AN]>> {
+		const store = this.getStore();
+		if (store === undefined) {
+			throw new Error('natur-service: store is undefined!');
+		}
 		const type = `${moduleName}/${actionName}`;
 		if (store.hasModule(moduleName)) {
 			return store.dispatch(moduleName, actionName, ...arg);
@@ -61,7 +63,7 @@ export default class NaturService<
 			if (!this.dispatchPromise[type]) {
 				this.dispatchPromise[type] = {
 					value: undefined,
-					cancel: () => {},
+					cancel: () => { },
 				};
 			}
 			if (!!this.dispatchPromise[type].value) {
@@ -80,17 +82,17 @@ export default class NaturService<
 					unsub();
 				};
 			})
-			.then(() => store.dispatch(moduleName, actionName, ...arg));
+				.then(() => store.dispatch(moduleName, actionName, ...arg));
 
 			return this.dispatchPromise[type].value;
 		}
 	}
 
 	private _getModule<M extends keyof ST>(moduleName: M) {
-        const store = this.getStore();
-        if (store === undefined) {
-            throw new Error('natur-service: store is undefined!');
-        }
+		const store = this.getStore();
+		if (store === undefined) {
+			throw new Error('natur-service: store is undefined!');
+		}
 		if (!store.hasModule(moduleName as string)) {
 			return undefined;
 		}
@@ -102,7 +104,7 @@ export default class NaturService<
 	}
 	protected async watch<
 		MN extends keyof ST,
-	>(moduleName: MN, watcher: <T extends ModuleEventType>(me: ServiceListenerParamsTypeMap<ST, MN>[T]) => any) {
+		>(moduleName: MN, watcher: <T extends ModuleEventType>(me: ServiceListenerParamsTypeMap<ST, MN>[T]) => any) {
 		/**
 		 * 在store的模块中，又可能引入service模块，
 		 * 在service模块构造函数中，一般会调用watch方法，但是store有可能为初始化完成，
@@ -110,10 +112,10 @@ export default class NaturService<
 		 */
 		await Promise.resolve();
 		const store = this.getStore();
-        if (store === undefined) {
-            throw new Error('natur-service: store is undefined!');
-        }
-		const {_getModule} = this;
+		if (store === undefined) {
+			throw new Error('natur-service: store is undefined!');
+		}
+		const { _getModule } = this;
 		let oldModule = _getModule(moduleName);
 		const unwatch = store.subscribe(moduleName as any, (me) => {
 			const newModule = _getModule(moduleName);
@@ -131,23 +133,53 @@ export default class NaturService<
 		};
 		this.listener.push(destroyWatch);
 	}
+	/**
+	 * sync sourceModule's data to targetModule when sourceModule data has changed and newData is not euqal to targetModule's data
+	 * @param sourceModuleName
+	 * @param targetModuleName
+	 * @param stateKey common key of sourceModule's state and targetModule's state
+	 * @example
+	 * this.watchAndSyncDataByStateKey('sourceModuleName', 'targetModuleName', 'StateKey')
+	 */
+	watchAndSyncDataByStateKey<
+		SMN extends keyof GenerateStoreType<M, LM>,
+		TMN extends Exclude<keyof GenerateStoreType<M, LM>, SMN>,
+		SK extends Extract<keyof GenerateStoreType<M, LM>[SMN]['state'], keyof GenerateStoreType<M, LM>[TMN]['state']>,
+		>(sourceModuleName: SMN, targetModuleName: TMN, stateKey: SK) {
+		this.watch(sourceModuleName, () => {
+			this.syncDataByStateKey(sourceModuleName, targetModuleName, stateKey);
+		});
+	}
+	/**
+	* sync sourceModule's data to targetModule when sourceModule's data is not equal to targetModule's data
+	* @param sourceModuleName
+	* @param targetModuleName
+	* @param stateKey common key of sourceModule's state and targetModule's state
+	* @example
+	* this.syncDataByStateKey('sourceModuleName', 'targetModuleName', 'StateKey')
+	*/
 	syncDataByStateKey<
-		MN extends keyof GenerateStoreType<M, LM>,
-		MN2 extends keyof GenerateStoreType<M, LM>,
-		DK extends Extract<keyof GenerateStoreType<M, LM>[MN]['state'], keyof GenerateStoreType<M, LM>[MN2]['state']>,
-	>(mn: MN, mn2: MN2, dataKey: DK) {
-		this.watch(mn, ({ state, oldModule }) => {
-			if (state) {
-				if ((oldModule?.state as typeof state)?.[dataKey] !== state[dataKey]) {
+		SMN extends keyof GenerateStoreType<M, LM>,
+		TMN extends Exclude<keyof GenerateStoreType<M, LM>, SMN>,
+		SK extends Extract<keyof GenerateStoreType<M, LM>[SMN]['state'], keyof GenerateStoreType<M, LM>[TMN]['state']>,
+		>(sourceModuleName: SMN, targetModuleName: TMN, stateKey: SK) {
+		try {
+			const sourceModule = this.store.getModule(sourceModuleName);
+			const targetModule = this.store.getModule(targetModuleName);
+			if (sourceModule?.state) {
+				type CK = (keyof typeof targetModule.state & keyof typeof sourceModule.state);
+				if (sourceModule.state[stateKey as CK] !== targetModule.state[stateKey as CK]) {
 					this.store.globalSetStates({
-						[mn2]: {
-						...this.store.getModule(mn2).state,
-						[dataKey]: state[dataKey],
+						[targetModuleName]: {
+							...this.store.getModule(targetModuleName).state,
+							[stateKey]: sourceModule.state[stateKey as keyof typeof sourceModule.state],
 						},
 					});
 				}
 			}
-		});
+		} catch (error) {
+			console.warn(error);
+		}
 	}
 	destroy() {
 		Object.keys(this.dispatchPromise).forEach(key => {
