@@ -25,6 +25,7 @@ const count2 = {
 const count3 = {
     state: {
         value: 1,
+        list: [{d: 1, v: 1}, 1],
         data: {
             a: 2,
             b: {
@@ -35,6 +36,7 @@ const count3 = {
     actions: {
         update: (ns: number) => ({
             value: ns,
+            list: [{d: ns, v: ns}, ns],
             data: {
                 a: ns,
                 b: {
@@ -51,6 +53,7 @@ const count3 = {
 const count4 = {
     state: {
         value: 1,
+        list: [{d: 1, v: 1}, 1],
         data: {
             a: 2,
             b: {
@@ -61,6 +64,7 @@ const count4 = {
     actions: {
         update: (ns: number) => ({
             value: ns,
+            list: [{d: ns, v: ns}, ns],
             data: {
                 a: ns,
                 b: {
@@ -254,8 +258,39 @@ test('watch sync data', async () => {
     class CountService extends BaseService {
         start() {
             this.watchAndSyncDataByKeyPath('count3', 'count4', 'state.value', 'data.a');
+            this.watchAndSyncDataByKeyPath('count3', 'count4', 'state.list.0.d' as any, 'list.0.v' as any);
             this.watchAndSyncDataByKeyPath('count3', 'count4', 'maps.plus1', 'value');
             this.watchAndSyncDataByKeyPath('count', 'count2', 'state');
+        }
+    }
+    const cs = new CountService();
+    await sleep(10);
+    store.dispatch('count3', 'update' ,11);
+    store.dispatch('count', 'update' ,11);
+    await sleep(10);
+    expect(store.getModule('count4').state.data.a).toBe(11);
+    expect(store.getModule('count4').state.value).toBe(12);
+    // @ts-ignore
+    expect(store.getModule('count4').state.list[0].v).toBe(11);
+    expect(store.getModule('count2').state).toBe(11);
+})
+
+
+test('watch sync data with', async () => {
+    class CountService extends BaseService {
+        start() {
+            this.watchAndSyncDataWith('count3', 'count4', sm => sm.state.value, (ts, nv) => ({
+                ...ts,
+                data: {
+                    ...ts.data,
+                    a: nv,
+                }
+            }));
+            this.watchAndSyncDataWith('count3', 'count4', sm => sm.maps.plus1, (ts, nv) => ({
+                ...ts,
+                value: nv,
+            }));
+            this.watchAndSyncDataWith('count', 'count2', sm => sm.state, (_, nv) => nv);
         }
     }
     const cs = new CountService();

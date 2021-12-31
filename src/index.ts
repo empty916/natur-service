@@ -7,17 +7,13 @@ import {
   PickLazyStoreModules,
   Store,
 } from "natur/dist/ts-utils";
-import {
-  getValueFromObjByKeyPath,
-  setValueFromObjByKeyPath,
-} from "./utils";
+import { getValueFromObjByKeyPath, setValueFromObjByKeyPath } from "./utils";
 
 import type {
-	ModuleEventType,
-	ObjKeyPaths,
-	ServiceListenerParamsTypeMap,
-} from './utils';
-
+  ModuleEventType,
+  ObjKeyPaths,
+  ServiceListenerParamsTypeMap,
+} from "./utils";
 
 // 停止上一次推送码
 const STOP_THE_LAST_DISPATCH_CODE = 0;
@@ -154,7 +150,7 @@ export default class NaturService<
     SMN extends keyof ST,
     TMN extends Exclude<keyof ST, SMN>,
     SKP extends ObjKeyPaths<Pick<ST[SMN], "state" | "maps">>,
-	TSKP extends ObjKeyPaths<ST[TMN]['state']>
+    TSKP extends ObjKeyPaths<ST[TMN]["state"]>
   >(
     sourceModuleName: SMN,
     targetModuleName: TMN,
@@ -162,7 +158,12 @@ export default class NaturService<
     targetModuleStateKeyPath?: TSKP
   ) {
     this.watch(sourceModuleName, () => {
-      this.syncDataByKeyPath(sourceModuleName, targetModuleName, sourceModuleKeyPath, targetModuleStateKeyPath);
+      this.syncDataByKeyPath(
+        sourceModuleName,
+        targetModuleName,
+        sourceModuleKeyPath,
+        targetModuleStateKeyPath
+      );
     });
   }
   /**
@@ -170,15 +171,15 @@ export default class NaturService<
    * @param sourceModuleName
    * @param targetModuleName
    * @param sourceModuleKeyPath key path of sourceModule's data (state and maps data)
-   * @param targetModuleStateKeyPath key path of targetModule's state 
+   * @param targetModuleStateKeyPath key path of targetModule's state
    * @example
    * this.watchAndSyncDataByStateKey('sourceModuleName', 'targetModuleName', 'state.dataName', 'sourceDataName')
    */
   syncDataByKeyPath<
-	SMN extends keyof ST,
-	TMN extends Exclude<keyof ST, SMN>,
-	SKP extends ObjKeyPaths<Pick<ST[SMN], "state" | "maps">>,
-	TSKP extends ObjKeyPaths<ST[TMN]['state']>
+    SMN extends keyof ST,
+    TMN extends Exclude<keyof ST, SMN>,
+    SKP extends ObjKeyPaths<Pick<ST[SMN], "state" | "maps">>,
+    TSKP extends ObjKeyPaths<ST[TMN]["state"]>
   >(
     sourceModuleName: SMN,
     targetModuleName: TMN,
@@ -193,15 +194,21 @@ export default class NaturService<
           sourceModule,
           sourceModuleKeyPath as any
         );
-        const targetData = targetModuleStateKeyPath === undefined ? targetModule.state : getValueFromObjByKeyPath(
-          targetModule.state,
-          targetModuleStateKeyPath as any
-        );
-		const newTargetModuleState = targetModuleStateKeyPath === undefined ? sourceData : setValueFromObjByKeyPath(
-			targetModule.state,
-			targetModuleStateKeyPath as any,
-			sourceData
-		);
+        const targetData =
+          targetModuleStateKeyPath === undefined
+            ? targetModule.state
+            : getValueFromObjByKeyPath(
+                targetModule.state,
+                targetModuleStateKeyPath as any
+              );
+        const newTargetModuleState =
+          targetModuleStateKeyPath === undefined
+            ? sourceData
+            : setValueFromObjByKeyPath(
+                targetModule.state,
+                targetModuleStateKeyPath as any,
+                sourceData
+              );
         if (sourceData !== targetData) {
           this.store.globalSetStates({
             [targetModuleName]: newTargetModuleState,
@@ -212,6 +219,69 @@ export default class NaturService<
       console.warn(error);
     }
   }
+
+  /**
+   * synchronize the data of sourceModule to targetModule, 
+   * when the data of sourceModule is update and different from the data of targetModule
+   * @param sourceModuleName 
+   * @param targetModuleName 
+   * @param sdGetter sourceModule data getter
+   * @param tsSetter 
+   */
+  watchAndSyncDataWith<
+    SMN extends keyof ST,
+    TMN extends Exclude<keyof ST, SMN>,
+    SDGetter extends (State: Pick<ST[SMN], 'state'|'maps'>) => any,
+    TSGetter extends (State: ST[TMN]["state"], data: ReturnType<SDGetter>) => ST[TMN]["state"]
+  >(
+    sourceModuleName: SMN,
+    targetModuleName: TMN,
+    sdGetter: SDGetter,
+    tsSetter: TSGetter
+  ) {
+    this.watch(sourceModuleName, () => {
+      this.syncDataWith(
+        sourceModuleName,
+        targetModuleName,
+        sdGetter,
+        tsSetter
+      );
+    });
+  }
+  /**
+   * synchronize the data of sourceModule to targetModule, when the data of sourceModule is different from the data of targetModule
+   * @param sourceModuleName
+   * @param targetModuleName
+   * @param stateKey common key of sourceModule's state and targetModule's state
+   * @example
+   * this.syncDataByStateKey('sourceModuleName', 'targetModuleName', 'StateKey')
+   */
+  syncDataWith<
+    SMN extends keyof ST,
+    TMN extends Exclude<keyof ST, SMN>,
+    SDGetter extends (State: Pick<ST[SMN], 'state'|'maps'>) => any,
+    TSGetter extends (State: ST[TMN]["state"], data: ReturnType<SDGetter>) => ST[TMN]["state"]
+  >(
+    sourceModuleName: SMN,
+    targetModuleName: TMN,
+    sdGetter: SDGetter,
+    tsSetter: TSGetter
+  ) {
+    try {
+      const sourceModule = this.store.getModule(sourceModuleName as string);
+      const targetModule = this.store.getModule(targetModuleName as string);
+      if (sourceModule) {
+        const nsd = sdGetter(sourceModule);
+        const ntd = tsSetter(targetModule.state, nsd);
+        this.store.globalSetStates({
+          [targetModuleName]: ntd,
+        } as any);
+      }
+    } catch (error) {
+      console.warn(error);
+    }
+  }
+
   destroy() {
     Object.keys(this.dispatchPromise).forEach((key) => {
       this.dispatchPromise[key].cancel();

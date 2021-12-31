@@ -2,6 +2,8 @@ import { InjectStoreModules, ModuleEvent } from 'natur';
 
 export { getValueFromObjByKeyPath } from 'natur/dist/utils';
 
+// export const isNumber = (data: any): data is number => !Number.isNaN(Number(i))
+
 export const setValueFromObjByKeyPath = <O extends {[p: string]: any}>(obj: O, keyPath: string, newValue: any): O | undefined => {
 	const formatKeyArr = keyPath.replace(/\[/g, '.').replace(/\]/g, '').split('.');
 	const res = {...obj};
@@ -12,9 +14,13 @@ export const setValueFromObjByKeyPath = <O extends {[p: string]: any}>(obj: O, k
 				value[formatKeyArr[i]] = newValue;
 				return res;
 			} else {
-				value[formatKeyArr[i]] = {
-					...value[formatKeyArr[i]]
-				};
+				if (Array.isArray(value[formatKeyArr[i]])) {
+					value[formatKeyArr[i]] = value[formatKeyArr[i]].slice();
+				} else {
+					value[formatKeyArr[i]] = {
+						...value[formatKeyArr[i]]
+					};
+				}
 				value = value[formatKeyArr[i]];
 			}
 		} catch (error) {
@@ -51,3 +57,16 @@ export type ObjKeyPaths<O = {}, Pre extends string = ''> = keyof {
     : GetPath<Pre, K>
   )]: any
 }
+
+
+// export type ObjKeyPaths<O = {}, Pre extends string = ''> = keyof {
+// 	[K in keyof O as (
+// 	  O[K] extends Record<string, any>
+// 	  ? O[K] extends (infer Item)[]
+// 		? Item extends Record<string, any>
+// 		  ? ObjKeyPaths<O[K], GetPath<Pre, `${K}.[${Item}]`>>
+// 		  : GetPath<Pre, `${K}.[${Item}]`>
+// 		: ObjKeyPaths<O[K], GetPath<Pre, K>>
+// 	  : GetPath<Pre, K>
+// 	)]: any
+//   }
