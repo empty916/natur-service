@@ -240,38 +240,58 @@ test('sync data', async () => {
     await sleep(10);
     store.dispatch('count3', 'update' ,11);
     store.dispatch('count', 'update' ,11);
-    cs.syncDataByKeyPath('count3', 'count4', 'state.value', 'data.a');
-    cs.syncDataByKeyPath('count3', 'count4', 'state.value', 'data.b.d');
-    cs.syncDataByKeyPath('count3', 'count4', 'maps.plus1', 'value');
+    // cs.syncDataByKeyPath('count3', 'count4', 'state.value', 'data.a');
+    // cs.syncDataByKeyPath('count3', 'count4', 'state.value', 'data.b.d');
+    // cs.syncDataByKeyPath('count3', 'count4', 'maps.plus1', 'value');
+    // cs.syncDataByKeyPath('count', 'count2', 'state');
 
-    cs.syncDataByKeyPath('count', 'count2', 'state');
+    cs.syncDataWith('count3', 'count4', (s) => {
+        return s.state.value
+    }, (state, d) => {
+        return {
+            ...state,
+            data: {
+                ...state.data,
+                a: d,
+            }
+        }
+    });
+
+    cs.syncDataWith('count3', 'count4', (s) => {
+        return s.maps.plus1
+    }, (state, d) => {
+        return {
+            ...state,
+            value: d,
+        }
+    })
+
+    cs.syncDataWith('count3', 'count4', (s) => {
+        return s.state.value
+    }, (state, d) => {
+        return {
+            ...state,
+            data: {
+                ...state.data,
+                b: {
+                    ...state.data.b,
+                    d: d,
+                }
+            }
+        }
+    })
+
+    cs.syncDataWith('count', 'count2', (s) => {
+        return s.state
+    }, (state, d) => {
+        return d
+    })
+
     await sleep(10);
     expect(store.getModule('count4').state.data.a).toBe(11);
     expect(store.getModule('count4').state.data.b.d).toBe(11);
     expect(store.getModule('count4').state.value).toBe(12);
 
-    expect(store.getModule('count2').state).toBe(11);
-})
-
-
-test('watch sync data', async () => {
-    class CountService extends BaseService {
-        start() {
-            this.watchAndSyncDataByKeyPath('count3', 'count4', 'state.value', 'data.a');
-            this.watchAndSyncDataByKeyPath('count3', 'count4', 'state.list.0.d' as any, 'list.0.v' as any);
-            this.watchAndSyncDataByKeyPath('count3', 'count4', 'maps.plus1', 'value');
-            this.watchAndSyncDataByKeyPath('count', 'count2', 'state');
-        }
-    }
-    const cs = new CountService();
-    await sleep(10);
-    store.dispatch('count3', 'update' ,11);
-    store.dispatch('count', 'update' ,11);
-    await sleep(10);
-    expect(store.getModule('count4').state.data.a).toBe(11);
-    expect(store.getModule('count4').state.value).toBe(12);
-    // @ts-ignore
-    expect(store.getModule('count4').state.list[0].v).toBe(11);
     expect(store.getModule('count2').state).toBe(11);
 })
 
