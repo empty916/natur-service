@@ -47,26 +47,3 @@ export type ServiceListenerParamsTypeMap<
     state: t extends "remove" ? undefined : StoreType[M]["state"];
   };
 };
-
-export type GetPath<Pre extends string, K> = Pre extends '' ? K : (`${Pre}` | `${Pre}.${Extract<K,string>}`)
-
-export type ObjKeyPaths<O = {}, Pre extends string = ''> = keyof {
-  [K in keyof O as (
-    O[K] extends Record<string, any>
-    ? ObjKeyPaths<O[K], GetPath<Pre, K>>
-    : GetPath<Pre, K>
-  )]: any
-}
-
-
-// export type ObjKeyPaths<O = {}, Pre extends string = ''> = keyof {
-// 	[K in keyof O as (
-// 	  O[K] extends Record<string, any>
-// 	  ? O[K] extends (infer Item)[]
-// 		? Item extends Record<string, any>
-// 		  ? ObjKeyPaths<O[K], GetPath<Pre, `${K}.[${Item}]`>>
-// 		  : GetPath<Pre, `${K}.[${Item}]`>
-// 		: ObjKeyPaths<O[K], GetPath<Pre, K>>
-// 	  : GetPath<Pre, K>
-// 	)]: any
-//   }

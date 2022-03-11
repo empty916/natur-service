@@ -3,15 +3,11 @@ import {
   GenerateStoreType,
   LazyStoreModules,
   Modules,
-  PickedLazyStoreModules,
-  PickLazyStoreModules,
   Store,
 } from "natur/dist/ts-utils";
-import { getValueFromObjByKeyPath, setValueFromObjByKeyPath } from "./utils";
 
 import type {
   ModuleEventType,
-  ObjKeyPaths,
   ServiceListenerParamsTypeMap,
 } from "./utils";
 
